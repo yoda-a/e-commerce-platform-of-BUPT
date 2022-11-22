@@ -1,0 +1,89 @@
+核心：找所有所有两两同时被购买商品出现的次数，
+现在其中有用户购买了其中一个商品，推荐该商品组合另外一件商品
+s_user
+id	name	age	phone
+1	jake		23	15023432330
+order
+id	name 	order_date 	user_id
+1	华联		2021-7-21	1
+orderline
+order_id	product_id	num
+1		1		10
+1		2		20
+product
+id	name	price		desc 		kc  
+1	苹果	5		富士山		200（斤）
+2	辣条	1		卫龙		10000
+3	香蕉	3		越南		300(斤)
+
+
+->
+	user_id	product_id
+	/user/hdfs/order.txt
+	1,1
+	1,2
+
+	浏览		购车车	购买		评价	
+	1		5		10		5
+
+
+
+create table s_user(
+id int primary key auto_increment,
+name varchar(20),
+age int,
+phone varchar(20)
+);
+insert into s_user values(10001,'jake',20,'15023453003'),(10002,'rose',22,'18923452343'),(10003,'tom',21,'15113453001'),(10004,'briup',22,'18823452456'),(10005,'kevin',24,'15925671003'),(10006,'patel',28,'15983432459');
+
+create table s_product(
+id int primary key auto_increment,
+name varchar(20),
+price double,
+descrition varchar(100),
+kc double
+);
+insert into s_product values(20001,'hadoop',89,'bigdata',1000),(20002,'hbase',36,'bigdata',110),(20003,'mysql',58,'bigdata',190),(20004,'sqoop',28,'bigdata',70),(20005,'flume',34,'bigdata',109),(20006,'kafka',29,'bigdata',78),(20007,'hive',31,'bigdata',83);
+
+create table s_order(
+id int primary key auto_increment,
+name varchar(20),
+order_date timestamp default current_timestamp on update current_timestamp,
+user_id int references s_user(id)
+);
+insert into s_order(id,name,user_id) values(1,'briup_store',10001),(2,'briup_store',10002),(3,'briup_store',10003),(4,'briup_store',10004),(5,'briup_store',10005),(6,'briup_store',10006),(7,'briup_store',10007);
+
+create table order_line(
+order_id int references s_order(id),
+product_id int references s_product(id),
+num double,
+primary key(order_id,product_id)
+);
+insert into order_line values(1,20001,1),(1,20002,1),(1,20005,1),(1,20006,1),(1,20007,1),(2,20003,1),(2,20004,1),(2,20006,1),(3,20002,1),(3,20007,1),(4,20001,1),(4,20002,1),(4,20005,1),(4,20006,1),(5,20001,1),(6,20004,1),(6,20007,1);
+
+
+
+查询语句：
+select s.user_id,d.product_id from s_order s,order_line d where s.id=d.order_id;
+
+
+
+将mysql中的数据迁移到hdfs分布式文件系统中
+sqoop import --connect jdbc:mysql://192.168.43.158:3306/briup --username root --password root --delete-target-dir --target-dir /user/hdfs/recommend --query 'select s.user_id,d.product_id,d.num from s_order s,order_line d where s.id=d.order_id and $CONDITIONS' --m 1
+
+
+将最终结果数据写入到数据库中：
+create table recommend(
+uid int references s_user(id),
+gid int references s_product(id),
+nums double,
+primary key(uid,gid)
+);
+
+
+
+
+
+
+
+
