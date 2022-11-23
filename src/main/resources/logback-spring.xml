@@ -1,0 +1,22 @@
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <contextName>${APP_Name}</contextName>
+    <!-- 其他配置省略-->
+    <!-- 系统日志输出 -->
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>user_log/user_operations.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 按天回滚 daily -->
+            <fileNamePattern>user_log/logs/user_operations.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- 日志最大的历史 30天 -->
+            <maxHistory>30</maxHistory>
+            <maxFileSize>10MB</maxFileSize>
+            <totalSizeCap>10GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+    <logger name="com.cy.store" level="INFO" additivity="false">
+        <appender-ref ref="file" />
+    </logger>
+</configuration>
